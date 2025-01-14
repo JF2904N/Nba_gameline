@@ -9,7 +9,6 @@ Created on Fri Jan 10 11:26:38 2025
 
 from nba_api.stats.endpoints import teamplayerdashboard, leaguedashteamstats, teamdashboardbygeneralsplits
 from nba_api.stats.static import teams
-import pandas as pd
 import time
 from datetime import datetime
 
@@ -92,12 +91,12 @@ def predict_game():
     print(f"Fetching data for the {season} season...\n")
 
     # Input team names and home court advantage
-    team1_name = input("Enter the first team name: ")
-    team2_name = input("Enter the second team name: ")
-    home_team = input(f"Who has home court advantage? ({team1_name}/{team2_name}): ").strip().lower()
+    home_team = input("Enter the home team name: ")
+    away_team = input("Enter the away team name: ")
 
-    team1_id = get_team_id(team1_name)
-    team2_id = get_team_id(team2_name)
+
+    team1_id = get_team_id(home_team)
+    team2_id = get_team_id(away_team)
 
     if not team1_id or not team2_id:
         print("One or both teams not found. Please check the spelling and try again.")
@@ -109,23 +108,23 @@ def predict_game():
     # Fetch and display team average points per game
     team1_avg_ppg, _ = fetch_team_avg_points_per_game(team1_id, season)
     team2_avg_ppg, _ = fetch_team_avg_points_per_game(team2_id, season)
-    print(f"{team1_name} Average Points Per Game: {team1_avg_ppg:.2f}")
-    print(f"{team2_name} Average Points Per Game: {team2_avg_ppg:.2f}")
+    print(f"{home_team} Average Points Per Game: {team1_avg_ppg:.2f}")
+    print(f"{away_team} Average Points Per Game: {team2_avg_ppg:.2f}")
 
     # Fetch and display player stats
     team1_player_avg_ppg, team1_player_stats = fetch_player_avg_points(team1_id, season)
     team2_player_avg_ppg, team2_player_stats = fetch_player_avg_points(team2_id, season)
-    print(f"\n{team1_name} Player Stats:\n", team1_player_stats)
-    print(f"\n{team2_name} Player Stats:\n", team2_player_stats)
+    print(f"\n{home_team} Player Stats:\n", team1_player_stats)
+    print(f"\n{away_team} Player Stats:\n", team2_player_stats)
 
     # Fetch and display team records
     team1_record, _ = fetch_team_record(team1_id, season)
     team2_record, _ = fetch_team_record(team2_id, season)
-    print(f"\n{team1_name} Win Percentage: {team1_record:.2%}")
-    print(f"{team2_name} Win Percentage: {team2_record:.2%}")
+    print(f"\n{home_team} Win Percentage: {team1_record:.2%}")
+    print(f"{away_team} Win Percentage: {team2_record:.2%}")
 
     # Calculate points
-    team1_points = 0
+    team1_points = 0.5
     team2_points = 0
 
     # Rule 1: Team current total points per game average
@@ -146,21 +145,16 @@ def predict_game():
     else:
         team2_points += 1
 
-    # Rule 4: Home court advantage
-    if home_team == team1_name.lower():
-        team1_points += 0.5
-    elif home_team == team2_name.lower():
-        team2_points += 0.5
 
     # Print results
     print(f"\nResults:")
-    print(f"{team1_name} Points: {team1_points}")
-    print(f"{team2_name} Points: {team2_points}")
+    print(f"{home_team} Points: {team1_points}")
+    print(f"{away_team} Points: {team2_points}")
 
     if team1_points > team2_points:
-        print(f"\nPrediction: {team1_name} wins!")
+        print(f"\nPrediction: {home_team} wins!")
     elif team2_points > team1_points:
-        print(f"\nPrediction: {team2_name} wins!")
+        print(f"\nPrediction: {away_team} wins!")
     else:
         print("\nPrediction: It's a tie!")
 
